@@ -1,0 +1,25 @@
+#!/usr/bin/env ansible-playbook
+- name: Downloading and deploying Refinerycms 
+  hosts: refinerycms 
+  sudo: yes
+  gather_facts: True
+  vars: 
+   refineryhome: /home/vagrant/refinerycms
+   githuburl: 'https://github.com/refinery/refinerycms'
+  tasks:
+    - name: clone refinerycms repository
+      git: repo={{ githuburl }} dest={{ refineryhome }}
+
+    - name: Bundler thing
+      command: /usr/bin/gem2.1 install bundler
+
+    - name: Bundle install 
+      command: /usr/local/bin/bundle install
+      args: 
+       chdir: '{{ refineryhome }}'
+      register: bundleout      
+
+    - debug: msg="{{ bundleout.stdout }}"
+    
+    - copy: src=config/refinerycms-start.sh dest={{ refineryhome }}/refinerycms-start.sh
+    - file: path=/home/vagrant/errbit/refinerycms-start.sh mode=0755
