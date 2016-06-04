@@ -11,15 +11,36 @@
       git: repo={{ githuburl }} dest={{ refineryhome }}
 
     - name: Bundler thing
-      command: /usr/bin/gem2.1 install bundler
+      command: /usr/bin/gem install bundler
 
     - name: Bundle install 
       command: /usr/local/bin/bundle install
       args: 
        chdir: '{{ refineryhome }}'
+      environment:
+        PATH: /usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/vagrant/.local/bin:/home/vagrant/bin
       register: bundleout      
 
     - debug: msg="{{ bundleout.stdout }}"
-    
+   
+    - name: Bundler thing
+      command: /usr/bin/gem install rails --version 4.2.4
+      environment:
+        PATH: /usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/vagrant/.local/bin:/home/vagrant/bin
+
+
+    - name: Install RefineryCMS Application
+      command: rails new my_new_application -m http://refinerycms.com/t/edge
+      args:
+       chdir: '{{ refineryhome }}'
+      environment:
+        PATH: /usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/vagrant/.local/bin:/home/vagrant/bin
+
+
+    - name: Start RefineryCMS
+      command: rails server -b 0.0.0.0
+      args:
+       chdir: '{{ refineryhome }}'
+ 
     - copy: src=config/refinerycms-start.sh dest={{ refineryhome }}/refinerycms-start.sh
     - file: path=/home/vagrant/errbit/refinerycms-start.sh mode=0755

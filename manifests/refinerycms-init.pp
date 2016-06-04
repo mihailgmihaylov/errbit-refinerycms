@@ -7,7 +7,8 @@
  # }
 
  $packages = [
-             	"ruby",
+             	"git",
+                "ruby",
              	"ruby-devel",
 		"rubygems",
              	"ImageMagick",
