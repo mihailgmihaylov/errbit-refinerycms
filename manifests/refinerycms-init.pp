@@ -1,11 +1,4 @@
 
- # yumrepo { 'nginx_repo':
- #   enabled  => 1,
- #   descr    => 'Nginx official repo',
- #   baseurl  => 'http://nginx.org/packages/centos/7/$basearch/',
- #   gpgcheck => 0,
- # }
-
  $packages = [
              	"git",
                 "ruby",
@@ -17,14 +10,21 @@
 		"libxslt-devel",
 		"sqlite",
 		"sqlite-devel",
+                "mysql",
+                "mysql-devel",
+                "postgresql",
+                "postgresql-devel"
 	    ]
  
 package  { $packages:
     ensure   => installed,
 }
 
-#package { 'nginx':
-#     ensure  => "installed",
-#     require => Yumrepo['nginx_repo']
-#}
+package  { 'epel-release':
+    ensure   => installed,
+}
+
+package  { 'nodejs':
+    ensure   => installed,
+}
 

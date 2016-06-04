@@ -7,40 +7,93 @@
    refineryhome: /home/vagrant/refinerycms
    githuburl: 'https://github.com/refinery/refinerycms'
   tasks:
+    - file: path={{ refineryhome }} state=directory owner=vagrant group=vagrant mode=0755
+
+    - name: Add RVM key
+      shell: "curl -sSL https://rvm.io/mpapis.asc | gpg2 --import - "
+
+    - name: Install RVM
+      shell: "curl -sSL https://get.rvm.io | bash"
+
+    - name: Ser RVM Env
+      shell: . /etc/profile
+
+    - name: Install ruby2.1.2
+      command: /usr/local/rvm/bin/rvm install 2.1.2
+
+    - name: Set to ruby2.1.2
+      shell: echo "rvm 2.1.2" >> /etc/bashrc
+      args:
+        executable: /bin/bash
+      sudo: yes
+
+    - name: Bundler
+      command: gem install bundler
+      environment:
+        PATH: "/usr/local/rvm/gems/ruby-2.1.2/bin:/usr/local/rvm/gems/ruby-2.1.2@global/bin:/usr/local/rvm/rubies/ruby-2.1.2/bin:$PATH"
+        GEM_HOME: "/usr/local/rvm/gems/ruby-2.1.2"
+        GEM_PATH: "/usr/local/rvm/gems/ruby-2.1.2:/usr/local/rvm/gems/ruby-2.1.2@global"
+        MY_RUBY_HOME: "/usr/local/rvm/rubies/ruby-2.1.2"
+        IRBRC: "/usr/local/rvm/rubies/ruby-2.1.2/.irbrc"
+      register: dbug
+      sudo: yes
+
+    - debug: msg={{ dbug.stdout }}
+
     - name: clone refinerycms repository
       git: repo={{ githuburl }} dest={{ refineryhome }}
 
-    - name: Bundler thing
-      command: /usr/bin/gem install bundler
+    - name: Bundler update psych
+      command: /usr/local/rvm/rubies/ruby-2.1.2/bin/gem update psych
 
-    - name: Bundle install 
-      command: /usr/local/bin/bundle install
-      args: 
-       chdir: '{{ refineryhome }}'
-      environment:
-        PATH: /usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/vagrant/.local/bin:/home/vagrant/bin
-      register: bundleout      
+    - name: Bundler install execjs gem
+      command: /usr/local/rvm/rubies/ruby-2.1.2/bin/gem install execjs
 
-    - debug: msg="{{ bundleout.stdout }}"
-   
-    - name: Bundler thing
-      command: /usr/bin/gem install rails --version 4.2.4
+    - name: Bundler install therubyrace gem
+      command: /usr/local/rvm/rubies/ruby-2.1.2/bin/gem install therubyracer
+
+    - name: Bundle install
+      command: /usr/local/rvm/gems/ruby-2.1.2/bin/bundle install
+      args:
+        chdir: '{{ refineryhome }}'
       environment:
-        PATH: /usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/vagrant/.local/bin:/home/vagrant/bin
+        GEM_HOME: "/usr/local/rvm/gems/ruby-2.1.2"
+        GEM_PATH: "/usr/local/rvm/gems/ruby-2.1.2:/usr/local/rvm/gems/ruby-2.1.2@global"
+        MY_RUBY_HOME: "/usr/local/rvm/rubies/ruby-2.1.2"
+        IRBRC: "/usr/local/rvm/rubies/ruby-2.1.2/.irbrc"
+        PATH: "/usr/local/rvm/gems/ruby-2.1.2/bin:/usr/local/rvm/gems/ruby-2.1.2@global/bin:/usr/local/rvm/rubies/ruby-2.1.2/bin:/usr/local/rvm/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/vagrant/.local/bin:/home/vagrant/bin"
+      register: bundleout
+      sudo: yes
+
+    - debug: msg={{ bundleout.stdout }}
+
+    #- name: Install Rails 4.2.4
+    #  command: /usr/bin/gem install rails --version 4.2.4
+    #  environment:
+    #    PATH: /usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/vagrant/.local/bin:/home/vagrant/bin
 
 
     - name: Install RefineryCMS Application
-      command: rails new my_new_application -m http://refinerycms.com/t/edge
-      args:
-       chdir: '{{ refineryhome }}'
+      command: /usr/local/rvm/gems/ruby-2.1.2/bin/rails new my_new_application -m http://refinerycms.com/t/edge
       environment:
-        PATH: /usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/vagrant/.local/bin:/home/vagrant/bin
-
+        GEM_HOME: "/usr/local/rvm/gems/ruby-2.1.2"
+        GEM_PATH: "/usr/local/rvm/gems/ruby-2.1.2:/usr/local/rvm/gems/ruby-2.1.2@global"
+        MY_RUBY_HOME: "/usr/local/rvm/rubies/ruby-2.1.2"
+        IRBRC: "/usr/local/rvm/rubies/ruby-2.1.2/.irbrc"
+        PATH: "/usr/local/rvm/gems/ruby-2.1.2/bin:/usr/local/rvm/gems/ruby-2.1.2@global/bin:/usr/local/rvm/rubies/ruby-2.1.2/bin:/usr/local/rvm/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/vagrant/.local/bin:/home/vagrant/bin"
 
     - name: Start RefineryCMS
-      command: rails server -b 0.0.0.0
+      command: /usr/local/rvm/gems/ruby-2.1.2/bin/rails server -b 0.0.0.0
       args:
-       chdir: '{{ refineryhome }}'
+        chdir: /home/vagrant/my_new_application
+
+    - name: Stop firewall
+      command: systemctl stop firewalld
+      sudo: yes
  
+    - name: Disable firewall
+      command: systemctl stop firewalld
+      sudo: yes
+
     - copy: src=config/refinerycms-start.sh dest={{ refineryhome }}/refinerycms-start.sh
     - file: path=/home/vagrant/errbit/refinerycms-start.sh mode=0755
