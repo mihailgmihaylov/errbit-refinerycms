@@ -45,7 +45,6 @@ Vagrant.configure(2) do |config|
 		mongodb.module_path = "modules"
         	mongodb.manifest_file = "mongodb.pp"
         end
-
   end
 
   config.vm.define "refinerycms" do |refinerycms|
@@ -68,7 +67,12 @@ Vagrant.configure(2) do |config|
                 puppet.manifest_file = "refinerycms-init.pp"
         end
 
-  end  
+  end
+
+# config.vm.provision :ansible do |ansible|
+#   ansible.playbook = "provisioning/playbook.yml"
+#   ansible.inventory_path = "provisioning/ansible_hosts"
+# end  
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs

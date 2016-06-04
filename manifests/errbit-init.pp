@@ -15,8 +15,6 @@
 
 
  $packages = [
-             	"ruby",
-             	"ruby-devel",
              	"git",
 	     	"libxml2",
 	     	"libxml2-devel",
@@ -32,14 +30,4 @@ package { 'nginx':
      require => Yumrepo['nginx_repo']
 }
 
- #$mpackages =  [
-#		"mongodb-org-shell",
-	#	"mongodb-org",
-	#	"mongodb-org-server",
-#		]
-
-#package { $mpackages:
-#     ensure  => "installed",
- #    require => Yumrepo['mongodb_repo']
-#}
 

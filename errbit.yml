@@ -7,36 +7,90 @@
    errbithome: /home/vagrant/errbit
    githuburl: 'https://github.com/errbit/errbit'
    mongohost: localhost
-   mongoport: 27017
+   mongoport: 27019
    mongopass: Q1w2e3r4t5y6
-   mongouser: mongoadmin
+   mongouser: mongodb
   tasks:
+    - file: path={{ errbithome }} state=directory owner=vagrant group=vagrant mode=0755
+
+    - name: Add RVM key
+      shell: "curl -sSL https://rvm.io/mpapis.asc | gpg2 --import - "
+
+    - name: Install RVM
+      shell: "curl -sSL https://get.rvm.io | bash"
+
+    - name: Ser RVM Env
+      shell: . /etc/profile
+
+    - name: Install ruby2.1.2
+      command: /usr/local/rvm/bin/rvm install 2.1.2
+
     - name: clone errbit repository
       git: repo={{ githuburl }} dest={{ errbithome }}
 
-    - name: Bundler thing
-      command: /usr/bin/gem2.1 install bundler
+    - name: Set to ruby2.1.2
+      shell: echo "rvm 2.1.2" >> /etc/bashrc
+      args:
+        executable: /bin/bash
+      sudo: yes
+
+    - name: Bundler 
+      command: gem install bundler 
+      environment:
+        PATH: "/usr/local/rvm/gems/ruby-2.1.2/bin:/usr/local/rvm/gems/ruby-2.1.2@global/bin:/usr/local/rvm/rubies/ruby-2.1.2/bin:$PATH"
+        GEM_HOME: "/usr/local/rvm/gems/ruby-2.1.2"
+        GEM_PATH: "/usr/local/rvm/gems/ruby-2.1.2:/usr/local/rvm/gems/ruby-2.1.2@global"
+        MY_RUBY_HOME: "/usr/local/rvm/rubies/ruby-2.1.2"
+        IRBRC: "/usr/local/rvm/rubies/ruby-2.1.2/.irbrc"
+      register: dbug
+      sudo: yes
+
+    - debug: msg={{ dbug.stdout }}
 
     - name: Bundle install 
-      command: /usr/local/bin/bundle install
+      command: /usr/local/rvm/gems/ruby-2.1.2/bin/bundle install
       args: 
-       chdir: '{{ errbithome }}'
-      register: bundleout      
+        chdir: '{{ errbithome }}'
+      environment:
+        PATH: "/usr/local/rvm/gems/ruby-2.1.2/bin:/usr/local/rvm/gems/ruby-2.1.2@global/bin:/usr/local/rvm/rubies/ruby-2.1.2/bin:$PATH"
+        GEM_HOME: "/usr/local/rvm/gems/ruby-2.1.2"
+        GEM_PATH: "/usr/local/rvm/gems/ruby-2.1.2:/usr/local/rvm/gems/ruby-2.1.2@global"
+        MY_RUBY_HOME: "/usr/local/rvm/rubies/ruby-2.1.2"
+        IRBRC: "/usr/local/rvm/rubies/ruby-2.1.2/.irbrc"
+        PATH: "/usr/local/rvm/gems/ruby-2.1.2/bin:/usr/local/rvm/gems/ruby-2.1.2@global/bin:/usr/local/rvm/rubies/ruby-2.1.2/bin:/usr/local/rvm/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/vagrant/.local/bin:/home/vagrant/bin"
+      register: bundleout
+      sudo: yes    
 
-    - debug: msg="{{ bundleout.stdout }}"
+    - debug: msg={{ bundleout.stdout }}
     
     - name: Bundle exec
-      command: /usr/local/bin/bundle exec rake errbit:bootstrap
+      command: /usr/local/rvm/gems/ruby-2.1.2/bin/bundle exec rake errbit:bootstrap
       args:
           chdir: '{{ errbithome }}'
       environment: 
-          MONGO_URL: "mongodb://{{ mongouser }}:{{ mongopass }}@{{ mongohost  }}:{{ mongoport }}/admin"
+        MONGO_URL: "mongodb://{{ mongouser }}:{{ mongopass }}@{{ mongohost  }}:{{ mongoport }}/admin"
+        GEM_HOME: "/usr/local/rvm/gems/ruby-2.1.2"
+        GEM_PATH: "/usr/local/rvm/gems/ruby-2.1.2:/usr/local/rvm/gems/ruby-2.1.2@global"
+        MY_RUBY_HOME: "/usr/local/rvm/rubies/ruby-2.1.2"
+        IRBRC: "/usr/local/rvm/rubies/ruby-2.1.2/.irbrc"
+        PATH: "/usr/local/rvm/gems/ruby-2.1.2/bin:/usr/local/rvm/gems/ruby-2.1.2@global/bin:/usr/local/rvm/rubies/ruby-2.1.2/bin:/usr/local/rvm/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/vagrant/.local/bin:/home/vagrant/bin"
       register: dbing
-  
+      sudo: yes 
+ 
     - debug: msg="{{ dbing.stdout }}"
 
-    - copy: src=config/start.sh dest=/home/vagrant/errbit/start.sh
-    - file: path=/home/vagrant/errbit/start.sh mode=0755
-    - file: path=/etc/nginx/sites-enabled/default state=absent
-    - copy: src=config/nginx.conf dest=/etc/nginx/sites-enabled/rails.conf
-    - service: name=nginx state=restarted 
+    - file: path=/etc/nginx/conf.d/default state=absent
+    - copy: src=config/errbit-start.sh dest=/home/vagrant/errbit/errbit-start.sh owner=vagrant group=vagrant mode=0755
+    - copy: src=config/nginx.conf dest=/etc/nginx/conf.d/rails.conf
+    - service: name=nginx state=restarted
+
+    - name: Stop firewall
+      command: systemctl stop firewalld
+      sudo: yes
+ 
+    - name: Disable firewall
+      command: systemctl stop firewalld
+      sudo: yes
+
+    - name: Start Errbit
+      shell: /home/vagrant/errbit/errbit-start.sh
