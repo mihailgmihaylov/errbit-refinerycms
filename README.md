@@ -62,3 +62,10 @@ Once everything is done, you can test by issueing the following command on the r
 rake airbrake:test
 
 This should procude an error which will be tracked in Errbit in the Errors tab.
+
+# Starting services
+If a machine has been restarted you can start each application using these scripts:
+
+/home/vagrant/errbit/errbit-start.sh
+
+/home/vagrant/my_new_application/refinerycms-start.sh

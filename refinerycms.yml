@@ -91,4 +91,4 @@
       sudo: yes
 
     - copy: src=config/refinerycms-start.sh dest=/home/vagrant/my_new_application/refinerycms-start.sh
-    - file: path=/home/vagrant/refinerycms/refinerycms-start.sh mode=0755
+    - file: path=/home/vagrant/my_new_application/refinerycms-start.sh mode=0755
