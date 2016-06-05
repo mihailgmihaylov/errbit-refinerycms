@@ -1,9 +1,5 @@
 #!/bin/bash
-PWD="/home/vagrant/refinerycms" 
+PWD="/home/vagrant/my_new_application" 
 cd $PWD
-rails new my_new_application -m http://refinerycms.com/t/edge
-
-cd my_new_application
-sudo nohup bundle exec rails server &
+bundle exec rails server &
 sleep 10
-#END

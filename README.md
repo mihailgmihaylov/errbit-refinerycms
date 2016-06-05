@@ -1,5 +1,9 @@
 # errbit-refinerycms
 
+Hello,
+This is a proof of concept project which aims to install Errbit and RefineryCMS and link them together so that Errbit recieves Refinery's errors.
+Note that as this projects is a PoC it does not aim to be a reusable one so you may find hardcoded parameters inside the files. If it is used for a real life use, you should parameterize it as convinient.
+
 #Requirements
 
 The deployment uses the following tools in order to build Errbit and RefineryCMS automatically:
@@ -46,6 +50,16 @@ At the end you will have two virtual machines that are redy for Errbit and Refni
 # Provision the software with Ansible
 
 ansible-playbook --private-key=.vagrant/machines/errbit/virtualbox/private_key -u vagrant -i ./config/vagrant.py errbit.yml
+!NOTE: After the playbook has finished its work successfully, look for the password for user errbit@errbit.example.com in the output of the command. Without it, you will not be able to login.
+
 
 ansible-playbook --private-key=.vagrant/machines/refinerycms/virtualbox/private_key -u vagrant -i ./config/vagrant.py refinerycms.yml 
 
+ansible-playbook -i ./config/vagrant.py configure-errbit-refinerycms.yml
+
+# Testing
+
+Once everything is done, you can test by issueing the following command on the refinerycms machine:
+rake airbrake:test
+
+This should procude an error which will be tracked in Errbit in the Errors tab.

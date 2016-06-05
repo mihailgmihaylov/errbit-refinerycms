@@ -53,7 +53,8 @@
       command: /usr/local/rvm/rubies/ruby-2.1.2/bin/gem install therubyracer
 
     - name: Add airbreak to Gemfile
-      command: echo "gem 'airbrake'" > '{{ refineryhome }}'/Gemfile
+      shell: echo "gem 'airbrake', '~> 5.0'" >> /home/vagrant/refinerycms/Gemfile
+      sudo: yes
 
     - name: Bundle install
       command: /usr/local/rvm/gems/ruby-2.1.2/bin/bundle install
@@ -70,12 +71,6 @@
 
     - debug: msg={{ bundleout.stdout }}
 
-    #- name: Install Rails 4.2.4
-    #  command: /usr/bin/gem install rails --version 4.2.4
-    #  environment:
-    #    PATH: /usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/vagrant/.local/bin:/home/vagrant/bin
-
-
     - name: Install RefineryCMS Application
       command: /usr/local/rvm/gems/ruby-2.1.2/bin/rails new my_new_application -m http://refinerycms.com/t/edge
       environment:
@@ -85,20 +80,15 @@
         IRBRC: "/usr/local/rvm/rubies/ruby-2.1.2/.irbrc"
         PATH: "/usr/local/rvm/gems/ruby-2.1.2/bin:/usr/local/rvm/gems/ruby-2.1.2@global/bin:/usr/local/rvm/rubies/ruby-2.1.2/bin:/usr/local/rvm/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/vagrant/.local/bin:/home/vagrant/bin"
 
-   - file: path=/home/vagrant/my_new_application state=directory owner=vagrant group=vagrant recurse=yes
-
-    - name: Start RefineryCMS
-      command: /usr/local/rvm/gems/ruby-2.1.2/bin/rails server -b 0.0.0.0
-      args:
-        chdir: /home/vagrant/my_new_application
+    - file: path=/home/vagrant/my_new_application state=directory owner=vagrant group=vagrant recurse=yes
 
     - name: Stop firewall
       command: systemctl stop firewalld
       sudo: yes
- 
+
     - name: Disable firewall
       command: systemctl disable firewalld
       sudo: yes
 
-    - copy: src=config/refinerycms-start.sh dest={{ refineryhome }}/refinerycms-start.sh
-    - file: path=/home/vagrant/errbit/refinerycms-start.sh mode=0755
+    - copy: src=config/refinerycms-start.sh dest=/home/vagrant/my_new_application/refinerycms-start.sh
+    - file: path=/home/vagrant/refinerycms/refinerycms-start.sh mode=0755

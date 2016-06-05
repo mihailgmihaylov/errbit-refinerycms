@@ -10,8 +10,8 @@
 		"libxslt-devel",
 		"sqlite",
 		"sqlite-devel",
-                "mysql",
-                "mysql-devel",
+                "mariadb",
+                "mariadb-devel",
                 "postgresql",
                 "postgresql-devel"
 	    ]
@@ -25,6 +25,7 @@ package  { 'epel-release':
 }
 
 package  { 'nodejs':
+    require => Package['epel-release'],
     ensure   => installed,
 }
 
