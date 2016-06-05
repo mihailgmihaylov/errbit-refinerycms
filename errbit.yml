@@ -89,7 +89,7 @@
       sudo: yes
  
     - name: Disable firewall
-      command: systemctl stop firewalld
+      command: systemctl disable firewalld
       sudo: yes
 
     - name: Start Errbit

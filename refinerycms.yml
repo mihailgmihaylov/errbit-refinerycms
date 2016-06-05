@@ -52,6 +52,9 @@
     - name: Bundler install therubyrace gem
       command: /usr/local/rvm/rubies/ruby-2.1.2/bin/gem install therubyracer
 
+    - name: Add airbreak to Gemfile
+      command: echo "gem 'airbrake'" > '{{ refineryhome }}'/Gemfile
+
     - name: Bundle install
       command: /usr/local/rvm/gems/ruby-2.1.2/bin/bundle install
       args:
@@ -82,6 +85,8 @@
         IRBRC: "/usr/local/rvm/rubies/ruby-2.1.2/.irbrc"
         PATH: "/usr/local/rvm/gems/ruby-2.1.2/bin:/usr/local/rvm/gems/ruby-2.1.2@global/bin:/usr/local/rvm/rubies/ruby-2.1.2/bin:/usr/local/rvm/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/vagrant/.local/bin:/home/vagrant/bin"
 
+   - file: path=/home/vagrant/my_new_application state=directory owner=vagrant group=vagrant recurse=yes
+
     - name: Start RefineryCMS
       command: /usr/local/rvm/gems/ruby-2.1.2/bin/rails server -b 0.0.0.0
       args:
@@ -92,7 +97,7 @@
       sudo: yes
  
     - name: Disable firewall
-      command: systemctl stop firewalld
+      command: systemctl disable firewalld
       sudo: yes
 
     - copy: src=config/refinerycms-start.sh dest={{ refineryhome }}/refinerycms-start.sh
